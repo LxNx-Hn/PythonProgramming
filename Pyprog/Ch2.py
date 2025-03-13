@@ -117,7 +117,7 @@ turtle.done() """
 PI=3.141592
 면적=반지름**2*PI
 print(면적) """
-import numpy as np 
+""" import numpy as np 
 x = np.random.randint(0, 10, size=10)
 print(x)
-print(np.sort(x))
+print(np.sort(x)) """
