@@ -1,4 +1,4 @@
-#원본코드 설명 /분석
+ #원본코드 설명 /분석
 from turtle import * # Turtle 라이브러리 내 모든 변수, 함수를 사용할 수 있도록 선언
 import random #랜덤 라이브러리 
 class Block(Turtle): #Block 클래스 선언, Turtle 클래스를 상속받음, 배열내 정수의 크기를 나타내는 블록을 생성
@@ -8,6 +8,7 @@ class Block(Turtle): #Block 클래스 선언, Turtle 클래스를 상속받음, 
         self.pu()
         self.shapesize(size * 1.5, 1.5, 2) #블록의 크기를 설정
         self.fillcolor("black") #블록의 색을 검은색으로 설정
+        self.st()
     def glow(self):#블록의 색을 빨간색으로 변경 (이동시에)
         self.fillcolor("red")
     def unglow(self):#블록의 색을 검정색으로 변경 (이동과정 종료시)

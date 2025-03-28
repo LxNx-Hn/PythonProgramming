@@ -56,7 +56,6 @@ class Shelf(list):
 # insert함수로 2번 원소를 3번 위치에 삽입, glow헤제
 # --> swap의 과정을 시각화할수있다는 장점이 있지만 
 #리스트 자료구조에서 중간 요소 삽입/삭제는 평균적으로 O(n)의 시간 복잡도를 가짐
-#삽입정렬을 제외한 모든 정렬알고리즘에서는 swap함수가 훨씬효율적이므로 swap함수만 구현후, 삽입정렬도 swap함수를 이용하여 구현
     def swap(self, i, j):
         self[i].glow()
         self[j].glow()
@@ -73,7 +72,31 @@ class Shelf(list):
         y_offset = width / 2 * 20
         d.sety(self.y + y_offset)
         d.setx(self.x + 34 * len(self))
-        self.append(d)        
+        self.append(d)  
+
+    def _close_gap_from_i(self, i): #블록이 움직일 때 빈 공간을 채우는 함수(i 이후의 원소들을 왼쪽으로 1칸씩 이동)
+        for b in self[i:]:
+            xpos, _ = b.pos()
+            b.setx(xpos - 34)
+    def _open_gap_from_i(self, i): #블록이 움직일 때 빈 공간을 만드는 함수 (i번째 원소부터오른쪽으로 1칸씩 이동)
+        for b in self[i:]:
+            xpos, _ = b.pos()
+            b.setx(xpos + 34)
+    def pop(self, key): #블록을 선반에서 제거
+        b = list.pop(self, key)
+        b.glow()
+        b.sety(200)
+        self._close_gap_from_i(key)
+        return b
+    def insert(self, key, b): #블록을 삽입(list의 insert를 시각화)
+        self._open_gap_from_i(key)
+        list.insert(self, key, b)
+        b.setx(self.x + 34 * key)
+        width, _, _ = b.shapesize()
+        # align blocks by the bottom edge
+        y_offset = width / 2 * 20
+        b.sety(self.y + y_offset)
+        b.unglow()   
 #텍스트 표시용
 def show_text(text, line=0):
     line = 20 * line
@@ -101,19 +124,18 @@ def bubble_sort(shelf): #버블정렬 알고리즘 추가
     #최악의 경우(역순정렬)에는 n(n-1)/2번의 비교가 필요하므로 시간복잡도는 O(n^2)
     #최선의 경우(이미 정렬된 경우)에는 n-1번의 비교가 필요하므로 시간복잡도는 O(n)
 
-def isort(shelf): #insert,pop기반으로 구현되어있던 삽입정렬 알고리즘을 swap기반으로 변경
+def isort(shelf): #삽입정렬은 swap보다 기존방식이 더 알고리즘을 보여주기에 적합함
     complexity = "O(n²), Ω(n)"
     description = "각 원소를 이미 정렬된 부분에 삽입하여 정렬. 버블 정렬보다 약간 효율적."
     show_algorithm_info("삽입 정렬", complexity, description)
-    for i in range(1, len(shelf)):
-        key = shelf[i]
-        j = i - 1
-        while j >= 0 and shelf[j].size > key.size:
-            shelf.swap(j, j + 1)
-            j -= 1
+    length = len(shelf)
+    for i in range(1, length):
+        hole = i
+        while hole > 0 and shelf[i].size < shelf[hole - 1].size: 
+            hole = hole - 1 
+        shelf.insert(hole, shelf.pop(i))
     #삽입정렬: i번째 원소를 0부터 i-1번째 원소들과 비교하여 올바른 위치에 삽입
     #key값을 배열에서 꺼낸 후, 배열을 탐색하며 key보다 큰 원소를 만나면 그 자리에 key를 삽입
-    #각 비교에서 원소들을 swap 하여 key의 적절한 위치를 찾아 배치함
     #최악의 경우(역순정렬)에는 n(n-1)/2번의 비교가 필요하므로 시간복잡도는 O(n^2)
     #최선의 경우(이미 정렬된 경우)에는 n-1번의 비교가 필요하므로 시간복잡도는 O(n)
     #버블,선택보다 빠르지만 배열이 길어질수록 효율성 하락
@@ -219,6 +241,37 @@ def merge_sort_helper(shelf, left, right): #병합정렬 함수, 안정성을 �
     #일정한 성능을 보장하지만, 퀵 정렬보다 느림
     #swap알고리즘을 사용하지않음, glow를 이용한 시각적효과를 직접 추가
 
+def heap_helper(shelf, n, i):  # 힙 구조를 만드는 함수
+    largest = i
+    left = 2 * i + 1
+    right = 2 * i + 2
+
+    if left < n and shelf[i].size < shelf[left].size:
+        largest = left
+
+    if right < n and shelf[largest].size < shelf[right].size:
+        largest = right
+
+    if largest != i:
+        shelf.swap(i, largest)
+        heap_helper(shelf, n, largest)
+
+def heap_sort(shelf):  # 힙 정렬 함수
+    complexity = "O(n log n)"
+    description = "힙 자료 구조를 사용하여 정렬."
+    show_algorithm_info("힙 정렬", complexity, description)
+    n = len(shelf)
+
+    for i in range(n // 2 - 1, -1, -1):
+        heap_helper(shelf, n, i)
+    for i in range(n - 1, 0, -1):
+        shelf.swap(0, i)
+        heap_helper(shelf, i, 0)
+    #힙 정렬: 최대 힙 트리나 최소 힙 트리를 구성해 정렬하는 방법
+    #내림차순 정렬을 위해서는 최대 힙을 구성하고, 오름차순 정렬을 위해서는 최소 힙을 구성
+    #heapify함수를 사용하여 힙 속성을 만족하는 subtree를 재구성
+    #힙 정렬은 퀵 정렬, 병합 정렬과 마찬가지로 O(n log n)의 시간 복잡도를 가짐
+
 def randomize():
     complexity = "O(n)"
     description = "리스트의 순서를 임의로 섞습니다."
@@ -291,6 +344,17 @@ def start_merge_sort(): #병합정렬 진행코드
     show_text(instructions3, line=2)
     enable_keys()
 
+def start_hip_sort(): #힙정렬 진행코드
+    disable_keys()
+    clear()
+    show_text("힙정렬 진행중")
+    heap_sort(s)
+    clear()
+    show_text(instructions1, line=0)
+    show_text(instructions2, line=1)
+    show_text(instructions3, line=2)
+    enable_keys()
+
 def init_shelf():
     global s
     s = Shelf(-200)
@@ -305,6 +369,7 @@ def disable_keys():
     onkey(None, "q")
     onkey(None, "r")
     onkey(None, "m")
+    onkey(None, "h")
     onkey(None, "space")
 
 def enable_keys():
@@ -313,6 +378,7 @@ def enable_keys():
     onkey(start_selection_sort, "s")
     onkey(start_quick_sort, "q")
     onkey(start_merge_sort, "m")#병합정렬
+    onkey(start_hip_sort, "h") #힙정렬
     onkey(randomize, "r")
     onkey(bye, "space")
 
@@ -329,7 +395,7 @@ def main():
     return "EVENTLOOP"
 
 instructions1 = "i: 삽입정렬,  s: 선택정렬,  q: 퀵정렬" #한글화
-instructions2 = "b: 버블정렬,  m: 병합정렬" #추가한 정렬들
+instructions2 = "b: 버블정렬,  m: 병합정렬, h:힙정렬 " #추가한 정렬들
 instructions3 = "r: 배열 섞기,  space: 종료"
 
 if __name__=="__main__":
