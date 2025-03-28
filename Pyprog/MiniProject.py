@@ -156,8 +156,34 @@ def selection_sort(shelf): #insert,pop기반으로 구현되어있던 선택정�
     #반복할때마다 앞에서부터 하나씩 정렬이 완료됨
     #최악의 경우(역순정렬)에는 n(n-1)/2번의 비교가 필요하므로 시간복잡도는 O(n^2)
     #최선의 경우(이미 정렬된 경우)에도 n(n-1)/2번의 비교가 필요하므로 시간복잡도는 O(n^2)
-
 def quick_sort_helper(shelf, low, high): #퀵정렬 함수, 안정성을 위해내부함수로 선언
+    complexity = "O(n log n) (평균), O(n²) (최악)"
+    description = "분할정복을 사용하여 피벗을 기준으로 정렬."
+    show_algorithm_info("퀵 정렬", complexity, description)
+
+    def partition(low, high):
+        pivot_index = random.randint(low, high) #무작위피벗 선택, 원래의코드에 기능추가
+        shelf[pivot_index].glow() # 피벗 블록 색상 변경 (glow)
+        shelf.swap(high, pivot_index)  # 피벗을 맨오른쪽으로 이동
+        pivot = shelf[high]
+        i = low - 1
+        for j in range(low, high):
+            if shelf[j].size <= pivot.size:
+                i += 1
+                shelf.swap(i, j)
+        shelf.swap(i + 1, high)
+        shelf[high].unglow() # 피벗 블록 색상 복원 (unglow)
+        return i + 1
+
+    def _quick_sort(low, high):
+        if low < high:
+            pi = partition(low, high)
+            _quick_sort(low, pi - 1)
+            _quick_sort(pi + 1, high)
+
+    _quick_sort(low, high)
+
+""" def quick_sort_helper(shelf, low, high): #퀵정렬 함수, 안정성을 위해내부함수로 선언
     complexity = "O(n log n) (평균), O(n²) (최악)"
     description = "분할정복을 사용하여 피벗을 기준으로 정렬."
     show_algorithm_info("퀵 정렬", complexity, description)
@@ -180,7 +206,7 @@ def quick_sort_helper(shelf, low, high): #퀵정렬 함수, 안정성을 위해�
             _quick_sort(low, pi - 1)
             _quick_sort(pi + 1, high)
 
-    _quick_sort(low, high)    
+    _quick_sort(low, high)     """
     #퀵 정렬: 분할정복 알고리즘을 사용하여 정렬
     #배열에서 하나의 요소(pivot)를 선택 pivot을 기준으로 배열을 두 개의 하위 배열로 분할
     #pivot보다 작은 요소는 왼쪽,큰 요소는 오른쪽에 위치
@@ -188,8 +214,61 @@ def quick_sort_helper(shelf, low, high): #퀵정렬 함수, 안정성을 위해�
     #분할 과정(partition)에서의 성능이 퀵 정렬의 전체 성능을 좌우
     #최악의 경우(정,역순 정렬)에는 O(n^2)의 시간 복잡도를 가질 수 있지만, 평균적으로 O(n log n)의 성능을 보장
     #피벗선택에 따라 성능편차가 심함 -> 최악의 경우를 피하기위해 피벗을 랜덤으로 선택하도록 코드 개선
-
+    
 def merge_sort_helper(shelf, left, right): #병합정렬 함수, 안정성을 위해내부함수로 선언
+    complexity = "O(n log n)"
+    description = "분할 정복을 사용하여 리스트를 병합 정렬합니다."
+    show_algorithm_info("병합 정렬", complexity, description)
+
+    def merge(left, mid, right): #병합정렬용 재귀호출함수
+        # 분할된 영역 강조
+        for i in range(left, right + 1):
+            shelf[i].glow()
+        left_half = shelf[left:mid+1]
+        right_half = shelf[mid+1:right+1]
+        i = j = 0
+        k = left
+        
+        while i < len(left_half) and j < len(right_half):
+            left_half[i].glow()
+            right_half[j].glow()
+            if left_half[i].size <= right_half[j].size:
+                shelf[k] = left_half[i]
+                shelf[k].setx(shelf.x + 34 * k)
+                i += 1
+            else:
+                shelf[k] = right_half[j]
+                shelf[k].setx(shelf.x + 34 * k)
+                j += 1
+            k += 1
+            left_half[i - 1].unglow() if i > 0 else None
+            right_half[j - 1].unglow() if j > 0 else None
+        while i < len(left_half):
+            shelf[k] = left_half[i]
+            shelf[k].setx(shelf.x + 34 * k)
+            i += 1
+            k += 1
+            left_half[i - 1].unglow() if i > 0 else None
+        while j < len(right_half):
+            shelf[k] = right_half[j]
+            shelf[k].setx(shelf.x + 34 * k)
+            j += 1
+            k += 1
+            right_half[j - 1].unglow() if j > 0 else None
+        # 분할된 영역 강조 해제
+        for i in range(left, right + 1):
+            shelf[i].unglow()
+
+    def _merge_sort(left, right): #병합정렬함수
+        if left < right:
+            mid = (left + right) // 2
+            _merge_sort(left, mid)
+            _merge_sort(mid + 1, right)
+            merge(left, mid, right)
+
+    _merge_sort(left, right)
+
+""" def merge_sort_helper(shelf, left, right): #병합정렬 함수, 안정성을 위해내부함수로 선언
     complexity = "O(n log n)"
     description = "분할 정복을 사용하여 리스트를 병합 정렬합니다."
     show_algorithm_info("병합 정렬", complexity, description)
@@ -233,7 +312,7 @@ def merge_sort_helper(shelf, left, right): #병합정렬 함수, 안정성을 �
             _merge_sort(left, mid)
             _merge_sort(mid + 1, right)
             merge(left, mid, right)
-    _merge_sort(left, right)
+    _merge_sort(left, right) """
     #병합 정렬: 분할 정복 알고리즘을 사용하여 정렬을 수행
     #배열을 더 작은 하위 배열(크기가 1이될때까지)로 반복적으로 분할후에 하위 배열을 정렬
     #정렬된 하위 배열을 다시 병합하여 새로운 정렬된 배열 생성
