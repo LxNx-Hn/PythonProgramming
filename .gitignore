@@ -97,3 +97,6 @@ Temporary Items
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/*.code-snippets
+
+# Ignore virtual environment folder
+FinalMP/Fin/
